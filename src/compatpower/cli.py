@@ -48,7 +48,7 @@ def main(argv: list[str] | None = None) -> int:
 
     ni = sub.add_parser("noninferiority", help="probability of showing compatibility (one-sided, ratio > margin)"); _model_args(ni)
     ni.add_argument("--runs", type=int, required=True); ni.add_argument("--plates", type=int, required=True)
-    ni.add_argument("--margin", type=float, default=0.66, help="default 0.66 (IB 'compatible' class)")
+    ni.add_argument("--margin", type=float, default=0.70, help="default 0.70 (IOBC harmless class); 0.66 = IB compatible class")
 
     t = sub.add_parser("table", help="design table runs x plates"); _model_args(t)
     t.add_argument("--margin", type=_margin, default=(0.75, 1 / 0.75)); t.add_argument("--out", help="CSV output")
@@ -57,10 +57,17 @@ def main(argv: list[str] | None = None) -> int:
     al.add_argument("--total", type=int, required=True); al.add_argument("--reduction", type=float, default=0.3)
     al.add_argument("--margin", type=_margin, default=(0.75, 1 / 0.75))
 
+    an = sub.add_parser("analyze", help="run-level non-inferiority analysis of real plate counts (one product)")
+    an.add_argument("csv", help="columns: run, group (control/treatment), count"); an.add_argument("--margin", type=float, default=0.70)
+
     es = sub.add_parser("estimate", help="estimate mu0, k, sd_run (and tau) from a CSV of plate counts")
     es.add_argument("csv", help="columns: run, group (control/treatment), count [, product]")
 
     a = ap.parse_args(argv)
+    if a.cmd == "analyze":
+        from .analyze import analyze
+        print(json.dumps(analyze(pd.read_csv(a.csv), a.margin), indent=1))
+        return 0
     if a.cmd == "estimate":
         model, rep = estimate_model(pd.read_csv(a.csv))
         print(json.dumps(rep, indent=1, default=float))

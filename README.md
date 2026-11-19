@@ -100,15 +100,26 @@ Compatibility is shown only when the whole 90% confidence interval of the ratio 
 
 Compatibility is really one-sided: *does the product harm the agent?* A **non-inferiority** test (H₀: ratio ≤ margin) answers it with more power than the two-sided TOST.
 
-**A margin the field already uses.** If a product reduces vegetative growth, sporulation and germination by the same ratio $r$, the biological index is $IB = 47r + 43r + 10r = 100r$ (Rossi-Zalaf et al. 2008), and "compatible" means $IB > 66$. The implied margin is therefore $r = 0.66$. For the T index (Alves et al. 1998; "compatible" if $T > 60$) it is $r = 0.60$.
+**Which margin?** The default is **0.70**, the IOBC/WPRS "harmless" limit for laboratory tests on beneficial organisms (< 30% reduction; Sterk et al. 1999). An alternative is **0.66**, the ratio at the "compatible" class limit of the biological index IB (Rossi-Zalaf et al. 2008) when growth, sporulation and germination all drop by the same ratio $r$ ($IB = 100r > 66$). Neither was defined for CFU, so choose and justify your margin *before* the assay.
 
 ```python
 from compatpower import noninferiority
-noninferiority(runs=5, plates=10, margin=0.66)                      # P(declare compatible | harmless product), ~0.87
-noninferiority(runs=5, plates=10, margin=0.66, true_reduction=0.34) # type I error at the margin, ~0.05-0.07
+noninferiority(runs=6, plates=10, margin=0.70)                       # P(declare compatible | harmless product), ~0.84
+noninferiority(runs=6, plates=10, margin=0.70, true_reduction=0.30)  # type I error at the margin, ~0.05
 ```
 
-With the default model, 4 runs × 10 plates already give about 75% and 5 × 10 about 86%. The two-sided TOST with the same margin gives about 56% and 74%.
+## Analysing your own assay
+
+`analyze()` runs the run-level non-inferiority test on real plate counts (one product at a time):
+
+```python
+import pandas as pd
+from compatpower import analyze
+analyze(pd.read_csv("examples/example_counts.csv"), margin=0.70)
+# {'runs': 4, 'ratio': 0.72, 'lower_limit': 0.55, 'p_difference': 0.06, 'decision': 'not shown compatible', ...}
+```
+
+The example shows the central point. The difference is **not significant** (p = 0.06), so the usual practice would call the product "compatible". But the lower 95% limit of the ratio (0.55) is below the margin (0.70), so compatibility is **not shown**.
 
 ## Runs buy more than plates
 
@@ -175,7 +186,8 @@ An example file with simulated data is in [`examples/example_counts.csv`](exampl
 ```bash
 compatpower power --runs 6 --plates 10 --reduction 0.3 [--analysis run|pooled|blocked]
 compatpower equivalence --runs 8 --plates 20 --margin 0.75,1.333
-compatpower noninferiority --runs 5 --plates 10 --margin 0.66
+compatpower noninferiority --runs 6 --plates 10 --margin 0.70
+compatpower analyze examples/example_counts.csv --margin 0.70
 compatpower allocate --total 60
 compatpower table --out design.csv
 compatpower estimate examples/example_counts.csv
@@ -185,7 +197,7 @@ compatpower estimate examples/example_counts.csv
 ## Assumptions and limitations
 
 - Counts are negative binomial within a run; run and run × treatment effects are normal on the log scale.
-- Tests use $\log(y+0.5)$, which is close to what most labs do. For the final analysis of real data, a negative binomial mixed model (run as random effect, with a run × treatment term) is the natural choice.
+- Plate-level tests use $\log(y+0.5)$; run-level tests use the log of each run mean without offset (the offset biased the ratio and inflated the non-inferiority error). For the final analysis of real data, a negative binomial mixed model (run as random effect, with a run × treatment term) is the natural choice.
 - The default parameters come from one isolate, one endpoint (CFU) and three runs; `tau` is assumed. They are a starting point, not a universal answer.
 - Equivalence margins are a scientific decision. Link them to what matters agronomically (for example the class limits of a compatibility index), and fix them before the assay.
 

@@ -54,8 +54,16 @@ def test_cli_power(capsys):
 
 
 def test_noninferiority_more_powerful_than_tost_and_valid():
-    ni = noninferiority(5, 10, 0.66, M, n_sim=2000, seed=2)
-    eq = equivalence(5, 10, (0.66, 1 / 0.66), M, n_sim=2000, seed=2)
+    ni = noninferiority(5, 10, 0.70, M, n_sim=2000, seed=2)
+    eq = equivalence(5, 10, (0.70, 1 / 0.70), M, n_sim=2000, seed=2)
     assert ni > eq
-    err = noninferiority(5, 10, 0.66, M, true_reduction=0.34, n_sim=4000, seed=5)
-    assert err < 0.09
+    err = noninferiority(5, 10, 0.70, M, true_reduction=0.30, n_sim=4000, seed=5)
+    assert 0.03 < err < 0.07
+
+
+def test_analyze_example():
+    from compatpower import analyze
+    df = pd.read_csv("examples/example_counts.csv")
+    res = analyze(df, margin=0.70)
+    assert res["runs"] == 4 and 0 < res["lower_limit"] < res["ratio"] < res["upper_limit"]
+    assert res["decision"] in ("compatible", "not shown compatible")

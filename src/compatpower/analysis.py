@@ -7,9 +7,14 @@ from scipy import stats
 OFFSET = 0.5
 
 
+def _log_mean(y: np.ndarray) -> np.ndarray:
+    m = y.mean(2)
+    return np.log(np.where(m > 0, m, OFFSET))  # no offset unless a run mean is zero
+
+
 def _run_differences(yc: np.ndarray, yt: np.ndarray) -> np.ndarray:
-    """Per-run difference of log mean counts, shape (n_sim, runs)."""
-    return np.log(yt.mean(2) + OFFSET) - np.log(yc.mean(2) + OFFSET)
+    """Per-run difference of log mean counts, shape (n_sim, runs). No offset (it biased the ratio)."""
+    return _log_mean(yt) - _log_mean(yc)
 
 
 def test_run_level(yc: np.ndarray, yt: np.ndarray, alpha: float = 0.05) -> np.ndarray:
@@ -75,13 +80,13 @@ def tost(yc: np.ndarray, yt: np.ndarray, margin: tuple[float, float] = (0.8, 1.2
     return np.nan_to_num(p, nan=1.0) < alpha
 
 
-def noninferiority(yc: np.ndarray, yt: np.ndarray, margin: float = 0.66, alpha: float = 0.05) -> np.ndarray:
+def noninferiority(yc: np.ndarray, yt: np.ndarray, margin: float = 0.70, alpha: float = 0.05) -> np.ndarray:
     """One-sided test that the treatment/control ratio is above `margin` (rejecting = "compatible").
 
     Run level (one-sided t on per-run log differences); needs >= 2 runs.
     """
     if not 0 < margin < 1:
-        raise ValueError("margin must be in (0, 1), e.g. 0.66")
+        raise ValueError("margin must be in (0, 1), e.g. 0.70")
     runs = yc.shape[1]
     if runs < 2:
         raise ValueError("non-inferiority at the run level needs at least 2 runs")
