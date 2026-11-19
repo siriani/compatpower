@@ -96,6 +96,20 @@ The reason is that more plates shrink the plate-level standard error towards zer
 
 Compatibility is shown only when the whole 90% confidence interval of the ratio lies inside the margins. With a single run this almost never happens, whatever the number of plates, because the interval must also cover day-to-day variation, which one run cannot estimate.
 
+### A one-sided question: non-inferiority
+
+Compatibility is really one-sided: *does the product harm the agent?* A **non-inferiority** test (H₀: ratio ≤ margin) answers it with more power than the two-sided TOST.
+
+**A margin the field already uses.** If a product reduces vegetative growth, sporulation and germination by the same ratio $r$, the biological index is $IB = 47r + 43r + 10r = 100r$ (Rossi-Zalaf et al. 2008), and "compatible" means $IB > 66$. The implied margin is therefore $r = 0.66$. For the T index (Alves et al. 1998; "compatible" if $T > 60$) it is $r = 0.60$.
+
+```python
+from compatpower import noninferiority
+noninferiority(runs=5, plates=10, margin=0.66)                      # P(declare compatible | harmless product), ~0.87
+noninferiority(runs=5, plates=10, margin=0.66, true_reduction=0.34) # type I error at the margin, ~0.05
+```
+
+With the default model, 4 runs × 10 plates already give about 75% and 5 × 10 about 86%. The two-sided TOST with the same margin gives about 56% and 74%.
+
 ## Runs buy more than plates
 
 Same effort, 60 plates per group, split differently:
@@ -161,6 +175,7 @@ An example file with simulated data is in [`examples/example_counts.csv`](exampl
 ```bash
 compatpower power --runs 6 --plates 10 --reduction 0.3 [--analysis run|pooled|blocked]
 compatpower equivalence --runs 8 --plates 20 --margin 0.75,1.333
+compatpower noninferiority --runs 5 --plates 10 --margin 0.66
 compatpower allocate --total 60
 compatpower table --out design.csv
 compatpower estimate examples/example_counts.csv

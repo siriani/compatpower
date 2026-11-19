@@ -7,7 +7,7 @@ from typing import Iterable
 import numpy as np
 import pandas as pd
 
-from .analysis import test_plates_blocked, test_plates_pooled, test_run_level, tost
+from .analysis import noninferiority as _noninf, test_plates_blocked, test_plates_pooled, test_run_level, tost
 from .model import AssayModel, simulate_counts
 
 ANALYSES = {"run": test_run_level, "pooled": test_plates_pooled, "blocked": test_plates_blocked}
@@ -38,6 +38,18 @@ def equivalence(runs: int, plates: int, margin: tuple[float, float] = (0.8, 1.25
     return float(tost(yc, yt, margin, alpha).mean())
 
 
+def noninferiority(runs: int, plates: int, margin: float = 0.66, model: AssayModel = AssayModel(),
+                   true_reduction: float = 0.0, alpha: float = 0.05, n_sim: int = 2000, seed: int | None = 1) -> float:
+    """Probability that a run-level non-inferiority test declares compatibility (ratio > `margin`).
+
+    With true_reduction = 0 this is the power to show compatibility of a harmless product; with
+    true_reduction = 1 - margin it is the type I error. The default margin 0.66 is the ratio implied by the
+    "compatible" class of the biological index IB (IB = 100 x ratio when all endpoints drop equally; IB > 66).
+    """
+    yc, yt = simulate_counts(model, runs, plates, true_reduction, n_sim, _rng(seed))
+    return float(_noninf(yc, yt, margin, alpha).mean())
+
+
 def design_table(runs: Iterable[int] = (3, 4, 5, 6, 8, 10), plates: Iterable[int] = (3, 5, 10, 20),
                  reductions: Iterable[float] = (0.2, 0.3, 0.5), margin: tuple[float, float] = (0.75, 1 / 0.75),
                  model: AssayModel = AssayModel(), alpha: float = 0.05, n_sim: int = 2000,
@@ -50,6 +62,7 @@ def design_table(runs: Iterable[int] = (3, 4, 5, 6, 8, 10), plates: Iterable[int
         for red in reductions:
             row[f"power_{round(red * 100)}pct"] = power(r, n, red, model, "run", alpha, n_sim, s)
         row["equivalence"] = equivalence(r, n, margin, model, 0.0, alpha, n_sim, s)
+        row["noninferiority_066"] = noninferiority(r, n, 0.66, model, 0.0, alpha, n_sim, s)
         rows.append(row)
     return pd.DataFrame(rows)
 

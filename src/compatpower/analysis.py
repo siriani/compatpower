@@ -73,3 +73,20 @@ def tost(yc: np.ndarray, yt: np.ndarray, margin: tuple[float, float] = (0.8, 1.2
     with np.errstate(divide="ignore", invalid="ignore"):
         p = np.maximum(stats.t.sf((m - lo) / se, df), stats.t.cdf((m - hi) / se, df))
     return np.nan_to_num(p, nan=1.0) < alpha
+
+
+def noninferiority(yc: np.ndarray, yt: np.ndarray, margin: float = 0.66, alpha: float = 0.05) -> np.ndarray:
+    """One-sided test that the treatment/control ratio is above `margin` (rejecting = "compatible").
+
+    Run level (one-sided t on per-run log differences); needs >= 2 runs.
+    """
+    if not 0 < margin < 1:
+        raise ValueError("margin must be in (0, 1), e.g. 0.66")
+    runs = yc.shape[1]
+    if runs < 2:
+        raise ValueError("non-inferiority at the run level needs at least 2 runs")
+    d = _run_differences(yc, yt)
+    m, se = d.mean(1), d.std(1, ddof=1) / np.sqrt(runs)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        p = stats.t.sf((m - np.log(margin)) / se, runs - 1)
+    return np.nan_to_num(p, nan=1.0) < alpha

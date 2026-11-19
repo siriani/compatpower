@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from compatpower import AssayModel, allocate, equivalence, estimate_model, power, simulate_counts
+from compatpower import AssayModel, allocate, equivalence, estimate_model, noninferiority, power, simulate_counts
 from compatpower.cli import main
 
 M = AssayModel(mu0=25, k=4.3, sd_run=0.48, tau=0.15)
@@ -51,3 +51,11 @@ def test_bad_inputs():
 def test_cli_power(capsys):
     assert main(["power", "--runs", "4", "--plates", "5", "--n-sim", "200"]) == 0
     assert 0 <= float(capsys.readouterr().out) <= 1
+
+
+def test_noninferiority_more_powerful_than_tost_and_valid():
+    ni = noninferiority(5, 10, 0.66, M, n_sim=2000, seed=2)
+    eq = equivalence(5, 10, (0.66, 1 / 0.66), M, n_sim=2000, seed=2)
+    assert ni > eq
+    err = noninferiority(5, 10, 0.66, M, true_reduction=0.34, n_sim=4000, seed=5)
+    assert err < 0.09

@@ -8,7 +8,7 @@ import sys
 import pandas as pd
 
 from . import __version__
-from .design import allocate, design_table, equivalence, power
+from .design import allocate, design_table, equivalence, noninferiority, power
 from .estimate import estimate_model
 from .model import AssayModel
 
@@ -46,6 +46,10 @@ def main(argv: list[str] | None = None) -> int:
     e.add_argument("--runs", type=int, required=True); e.add_argument("--plates", type=int, required=True)
     e.add_argument("--margin", type=_margin, default=(0.75, 1 / 0.75), help="e.g. 0.75,1.333")
 
+    ni = sub.add_parser("noninferiority", help="probability of showing compatibility (one-sided, ratio > margin)"); _model_args(ni)
+    ni.add_argument("--runs", type=int, required=True); ni.add_argument("--plates", type=int, required=True)
+    ni.add_argument("--margin", type=float, default=0.66, help="default 0.66 (IB 'compatible' class)")
+
     t = sub.add_parser("table", help="design table runs x plates"); _model_args(t)
     t.add_argument("--margin", type=_margin, default=(0.75, 1 / 0.75)); t.add_argument("--out", help="CSV output")
 
@@ -66,6 +70,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{power(a.runs, a.plates, a.reduction, m, a.analysis, a.alpha, a.n_sim, a.seed):.3f}")
     elif a.cmd == "equivalence":
         print(f"{equivalence(a.runs, a.plates, a.margin, m, 0.0, a.alpha, a.n_sim, a.seed):.3f}")
+    elif a.cmd == "noninferiority":
+        print(f"{noninferiority(a.runs, a.plates, a.margin, m, 0.0, a.alpha, a.n_sim, a.seed):.3f}")
     elif a.cmd == "table":
         df = design_table(margin=a.margin, model=m, alpha=a.alpha, n_sim=a.n_sim, seed=a.seed)
         df.to_csv(a.out, index=False) if a.out else print(df.round(3).to_string(index=False))
