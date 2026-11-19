@@ -1,6 +1,7 @@
 # compatpower
 
 [![tests](https://github.com/siriani/compatpower/actions/workflows/tests.yml/badge.svg)](https://github.com/siriani/compatpower/actions/workflows/tests.yml)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24380785.svg)](https://doi.org/10.5281/zenodo.24380785)
 
 **Power, equivalence and design of in vitro compatibility assays between biological control agents and pesticides.**
 
@@ -48,7 +49,9 @@ compatpower estimate examples/example_counts.csv
 The default parameters are estimated from CFU counts of *Beauveria bassiana* isolate IBCB 170 over three runs. `sd_run` is imprecise (three runs), and `tau` was assumed (0.15), because it can be estimated only when the same product is tested in several runs. Estimate the parameters from your own data whenever possible (`estimate_model`). Analyses use log(count + 0.5). A negative binomial mixed model is the natural alternative for final analyses.
 
 ## Citation
-Please cite the software through its Zenodo DOI (see `CITATION.cff`) and the accompanying article (in preparation).
+Siriani ALR, Leite SMM. compatpower: power, equivalence and design of in vitro compatibility assays between biological control agents and pesticides (version 0.1.0). Zenodo; 2026. https://doi.org/10.5281/zenodo.24380785
+
+Please also cite the accompanying article (in preparation).
 
 ## License
 MIT
