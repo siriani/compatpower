@@ -105,7 +105,7 @@ Compatibility is really one-sided: *does the product harm the agent?* A **non-in
 ```python
 from compatpower import noninferiority
 noninferiority(runs=5, plates=10, margin=0.66)                      # P(declare compatible | harmless product), ~0.87
-noninferiority(runs=5, plates=10, margin=0.66, true_reduction=0.34) # type I error at the margin, ~0.05
+noninferiority(runs=5, plates=10, margin=0.66, true_reduction=0.34) # type I error at the margin, ~0.05-0.07
 ```
 
 With the default model, 4 runs × 10 plates already give about 75% and 5 × 10 about 86%. The two-sided TOST with the same margin gives about 56% and 74%.
