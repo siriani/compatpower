@@ -60,8 +60,8 @@ Three sources of variation produce this:
 Formally, for run $r$, group $g$ (0 = control, 1 = treatment) and plate $i$:
 
 $$
-y_{rgi} \sim \mathrm{NB}\left(\mu_{rg},\, k\right), \qquad
-\log \mu_{rg} = \log \mu_0 + a_r + g\,\big(\log(1-\delta) + c_r\big),
+y_{rgi} \sim \mathrm{NB}\left(\mu_{rg}, k\right), \qquad
+\log \mu_{rg} = \log \mu_0 + a_r + g \cdot \big(\log(1-\delta) + c_r\big),
 $$
 
 $$
