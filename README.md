@@ -1,5 +1,7 @@
 # compatpower
 
+[![tests](https://github.com/siriani/compatpower/actions/workflows/tests.yml/badge.svg)](https://github.com/siriani/compatpower/actions/workflows/tests.yml)
+
 **Power, equivalence and design of in vitro compatibility assays between biological control agents and pesticides.**
 
 In vitro compatibility assays (for example, colony-forming units of an entomopathogenic fungus on medium with a pesticide) are often run on a single day with 3–5 plates per treatment. "Compatible" is then declared when the treatment does not differ significantly from the control. `compatpower` simulates such assays to answer three planning questions:
