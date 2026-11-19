@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "compatpower: power, equivalence and design of in vitro compatibility assays between biological control agents and pesticides"
+version: 0.1.0
+license: MIT
+repository-code: "https://github.com/siriani/compatpower"
+authors:
+  - family-names: Siriani
+    given-names: Allan Lincoln Rodrigues
+    orcid: "https://orcid.org/0000-0001-6351-2642"
+    affiliation: "Graduate Program in Agribusiness and Development, School of Sciences and Engineering, São Paulo State University (UNESP), Tupã, Brazil"
+  - family-names: Leite
+    given-names: Susi Meire Maximino
+    orcid: "https://orcid.org/0009-0002-8764-680X"
+    affiliation: "Centro Paula Souza (CPS), Faculdade de Tecnologia Shunji Nishimura (Fatec Pompeia), Pompeia, Brazil"
+keywords: [statistical power, equivalence test, compatibility, entomopathogenic fungi, biological control, pesticides, experimental design]

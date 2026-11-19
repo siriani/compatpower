@@ -1,0 +1,11 @@
+{
+  "title": "compatpower: power, equivalence and design of in vitro compatibility assays between biological control agents and pesticides",
+  "upload_type": "software",
+  "license": "MIT",
+  "creators": [
+    {"name": "Siriani, Allan Lincoln Rodrigues", "orcid": "0000-0001-6351-2642", "affiliation": "São Paulo State University (UNESP)"},
+    {"name": "Leite, Susi Meire Maximino", "orcid": "0009-0002-8764-680X", "affiliation": "Centro Paula Souza (CPS), Fatec Pompeia"}
+  ],
+  "keywords": ["statistical power", "equivalence test", "compatibility", "entomopathogenic fungi", "biological control", "pesticides", "experimental design"],
+  "description": "Simulation-based power, equivalence (TOST) and run-by-plate allocation for in vitro compatibility assays, with parameter estimation from a laboratory's own plate counts."
+}
