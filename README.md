@@ -218,7 +218,7 @@ compatpower estimate examples/example_counts.csv
 
 ## Citation
 
-Siriani ALR, Leite SMM. *compatpower: power, equivalence and design of in vitro compatibility assays between biological control agents and pesticides* (version 0.1.1). Zenodo; 2026. https://doi.org/10.5281/zenodo.24382859
+Siriani ALR, Leite SMM. *compatpower: power, equivalence and design of in vitro compatibility assays between biological control agents and pesticides* (version 0.1.2). Zenodo; 2026. https://doi.org/10.5281/zenodo.24388341
 
 All versions: https://doi.org/10.5281/zenodo.24380784. Please also cite the accompanying article (in preparation).
 
