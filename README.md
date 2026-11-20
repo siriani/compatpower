@@ -1,7 +1,7 @@
 # compatpower
 
 [![tests](https://github.com/siriani/compatpower/actions/workflows/tests.yml/badge.svg)](https://github.com/siriani/compatpower/actions/workflows/tests.yml)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24380785.svg)](https://doi.org/10.5281/zenodo.24380785)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24380784.svg)](https://doi.org/10.5281/zenodo.24380784)
 [![PyPI](https://img.shields.io/pypi/v/compatpower.svg)](https://pypi.org/project/compatpower/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -94,7 +94,7 @@ The reason is that more plates shrink the plate-level standard error towards zer
 
 ![TOST](docs/img/tost.png)
 
-Compatibility is shown only when the whole 90% confidence interval of the ratio lies inside the margins. With a single run this almost never happens, whatever the number of plates, because the interval must also cover day-to-day variation, which one run cannot estimate.
+Compatibility is shown only when the whole 90% confidence interval of the ratio lies inside the margins. With a single run of CFU-like counts (plate CV ≈ 50%) the interval is too wide for this even with 20 plates; and when a single run does produce a narrow interval, it describes that day only, because one run cannot measure how the product effect varies between days.
 
 ### A one-sided question: non-inferiority
 
@@ -132,8 +132,8 @@ And the full design table (power to detect a 30% reduction with the run-level an
 ![design table](docs/img/design_table.png)
 
 Rules of thumb with the default parameters (CFU of a *B. bassiana* isolate):
-- plan **at least 6–8 independent runs** to detect a 30% reduction with ~80% power;
-- demonstrating equivalence needs even more (about 8 runs × 20 plates or 10 × 10 for margins 0.75–1.33);
+- plan **about 8 runs of 10 plates** (6–9 across plausible *k* and means, at τ = 0.15; more if τ is larger) to detect a 30% CFU reduction with ~80% power;
+- to show compatibility, prefer the one-sided non-inferiority test (margin 0.70): about 6 runs × 10 plates give ~84% (τ = 0.15); two-sided equivalence needs more;
 - for a fixed number of plates, **more runs with fewer plates** is almost always better;
 - low-variance endpoints (e.g. germination, which is close to binomial) need fewer plates per run, but the same number of runs.
 
@@ -203,7 +203,7 @@ compatpower estimate examples/example_counts.csv
 
 ## Citation
 
-Siriani ALR, Leite SMM. *compatpower: power, equivalence and design of in vitro compatibility assays between biological control agents and pesticides* (version 0.1.0). Zenodo; 2026. https://doi.org/10.5281/zenodo.24380785
+Siriani ALR, Leite SMM. *compatpower: power, equivalence and design of in vitro compatibility assays between biological control agents and pesticides* (version 0.1.1). Zenodo; 2026. https://doi.org/10.5281/zenodo.24382859
 
 All versions: https://doi.org/10.5281/zenodo.24380784. Please also cite the accompanying article (in preparation).
 

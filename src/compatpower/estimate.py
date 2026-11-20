@@ -28,8 +28,8 @@ def estimate_k(groups: list[np.ndarray]) -> float:
     return float(np.exp(res.x))
 
 
-def estimate_model(df: pd.DataFrame, tau: float | None = None) -> tuple[AssayModel, dict]:
-    """Fit mu0, k and sd_run from control plates (and k also from treatment plates).
+def estimate_model(df: pd.DataFrame, tau: float | None = None, controls_only: bool = True) -> tuple[AssayModel, dict]:
+    """Fit mu0, k and sd_run from control plates (k also from treatment plates if controls_only=False).
 
     sd_run is estimated by the method of moments: variance of log control means across runs minus their
     expected sampling variance. tau is estimated only if a `product` column has the same product in >= 2 runs;
@@ -39,7 +39,8 @@ def estimate_model(df: pd.DataFrame, tau: float | None = None) -> tuple[AssayMod
     if not need <= set(df.columns):
         raise ValueError(f"columns required: {sorted(need)}")
     df = df.assign(group=df["group"].str.lower().str.strip())
-    groups = [g["count"].to_numpy(float) for _, g in df.groupby(["run", "group"])]
+    src = df[df.group == "control"] if controls_only else df
+    groups = [g["count"].to_numpy(float) for _, g in src.groupby(["run", "group"])]
     ctrl = [g["count"].to_numpy(float) for _, g in df[df.group == "control"].groupby("run")]
     if not ctrl:
         raise ValueError("no control plates found (group == 'control')")

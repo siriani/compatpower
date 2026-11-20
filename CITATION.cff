@@ -1,9 +1,9 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 title: "compatpower: power, equivalence and design of in vitro compatibility assays between biological control agents and pesticides"
-version: 0.1.0
-doi: "10.5281/zenodo.24380785"
-date-released: "2026-11-19"
+version: 0.1.1
+doi: "10.5281/zenodo.24382859"
+date-released: "2026-11-20"
 license: MIT
 repository-code: "https://github.com/siriani/compatpower"
 authors:

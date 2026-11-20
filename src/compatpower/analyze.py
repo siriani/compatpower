@@ -1,4 +1,4 @@
-"""Analyse a real compatibility assay at the run level (Box 1 of the accompanying article)."""
+"""Analyse a real compatibility assay at the run level (Section 2.5 of the accompanying article)."""
 from __future__ import annotations
 
 import numpy as np
