@@ -1,4 +1,4 @@
-"""Command-line interface: `compatpower power|equivalence|table|allocate|estimate`."""
+"""Command-line interface: `compatpower power|equivalence|noninferiority|runs|table|allocate|analyze|estimate`."""
 from __future__ import annotations
 
 import argparse
@@ -8,7 +8,7 @@ import sys
 import pandas as pd
 
 from . import __version__
-from .design import allocate, design_table, equivalence, noninferiority, power
+from .design import allocate, design_table, equivalence, noninferiority, power, required_runs_ni
 from .estimate import estimate_model
 from .model import AssayModel
 
@@ -57,8 +57,15 @@ def main(argv: list[str] | None = None) -> int:
     al.add_argument("--total", type=int, required=True); al.add_argument("--reduction", type=float, default=0.3)
     al.add_argument("--margin", type=_margin, default=(0.75, 1 / 0.75))
 
-    an = sub.add_parser("analyze", help="run-level non-inferiority analysis of real plate counts (one product)")
-    an.add_argument("csv", help="columns: run, group (control/treatment), count"); an.add_argument("--margin", type=float, default=0.70)
+    an = sub.add_parser("analyze", help="run-level analysis of real plate counts (one product): compatible / harmful / inconclusive")
+    an.add_argument("csv", help="columns: run, group (control/treatment), count [, product]")
+    an.add_argument("--margin", type=float, default=0.70); an.add_argument("--alpha", type=float, default=0.05)
+    an.add_argument("--product", help="analyse only this value of the product column")
+
+    rr = sub.add_parser("runs", help="runs needed to declare compatibility (non-inferiority)"); _model_args(rr)
+    rr.add_argument("--plates", type=int, required=True); rr.add_argument("--margin", type=float, default=0.70)
+    rr.add_argument("--reduction", type=float, default=0.0, help="true reduction of the product (0 = no effect)")
+    rr.add_argument("--target", type=float, default=0.8)
 
     es = sub.add_parser("estimate", help="estimate mu0, k, sd_run (and tau) from a CSV of plate counts")
     es.add_argument("csv", help="columns: run, group (control/treatment), count [, product]")
@@ -66,7 +73,10 @@ def main(argv: list[str] | None = None) -> int:
     a = ap.parse_args(argv)
     if a.cmd == "analyze":
         from .analyze import analyze
-        print(json.dumps(analyze(pd.read_csv(a.csv), a.margin), indent=1))
+        df = pd.read_csv(a.csv)
+        if a.product is not None:
+            df = df[df["product"].astype(str) == a.product]
+        print(json.dumps(analyze(df, a.margin, a.alpha), indent=1))
         return 0
     if a.cmd == "estimate":
         model, rep = estimate_model(pd.read_csv(a.csv))
@@ -79,6 +89,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{equivalence(a.runs, a.plates, a.margin, m, 0.0, a.alpha, a.n_sim, a.seed):.3f}")
     elif a.cmd == "noninferiority":
         print(f"{noninferiority(a.runs, a.plates, a.margin, m, 0.0, a.alpha, a.n_sim, a.seed):.3f}")
+    elif a.cmd == "runs":
+        print(required_runs_ni(a.plates, a.margin, a.reduction, a.target, m, alpha=a.alpha, n_sim=a.n_sim, seed=a.seed))
     elif a.cmd == "table":
         df = design_table(margin=a.margin, model=m, alpha=a.alpha, n_sim=a.n_sim, seed=a.seed)
         df.to_csv(a.out, index=False) if a.out else print(df.round(3).to_string(index=False))

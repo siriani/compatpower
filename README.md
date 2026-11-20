@@ -25,7 +25,7 @@ compatpower allocate --total 60        # same 60 plates, split 2x30 ... 20x3
 - [Why this matters](#why-this-matters)
 - [The assay as a statistical model](#the-assay-as-a-statistical-model)
 - [What is the experimental unit?](#what-is-the-experimental-unit)
-- [Compatibility is an equivalence claim](#compatibility-is-an-equivalence-claim)
+- [Compatibility is a non-inferiority claim](#compatibility-is-a-non-inferiority-claim)
 - [Runs buy more than plates](#runs-buy-more-than-plates)
 - [Usage](#usage) · [Estimating your own parameters](#estimating-your-own-parameters) · [Command line](#command-line)
 - [Assumptions and limitations](#assumptions-and-limitations) · [Citation](#citation)
@@ -88,13 +88,13 @@ When there is no true effect but the product effect varies between days, the pla
 
 The reason is that more plates shrink the plate-level standard error towards zero, while the day-to-day variation of the effect ($\tau$) stays. The test becomes very confident about a difference that belongs to *that particular day*.
 
-## Compatibility is an equivalence claim
+## Compatibility is a non-inferiority claim
 
-"The product is compatible" means "the effect is too small to matter". That is not the same as "the effect was not significant". The right tool is an **equivalence test**: two one-sided tests (TOST) on the treatment/control ratio, with margins fixed in advance (for example 0.75–1.33, i.e. at most a 25% change either way).
+"The product is compatible" means "the effect is too small to matter". That is not the same as "the effect was not significant". The right tool tests the effect against a margin fixed in advance. The primary choice is a one-sided **non-inferiority** test (below); two one-sided tests (TOST) give the two-sided version, shown here for illustration with margins 0.75–1.33.
 
 ![TOST](docs/img/tost.png)
 
-Compatibility is shown only when the whole 90% confidence interval of the ratio lies inside the margins. With a single run of CFU-like counts (plate CV ≈ 50%) the interval is too wide for this even with 20 plates; and when a single run does produce a narrow interval, it describes that day only, because one run cannot measure how the product effect varies between days.
+With TOST, compatibility is shown only when the whole 90% confidence interval of the ratio lies inside the margins. With a single run of CFU-like counts (plate CV ≈ 50%) the interval is too wide for this even with 20 plates; and when a single run does produce a narrow interval, it describes that day only, because one run cannot measure how the product effect varies between days.
 
 ### A one-sided question: non-inferiority
 
@@ -110,16 +110,30 @@ noninferiority(runs=6, plates=10, margin=0.70, true_reduction=0.30)  # type I er
 
 ## Analysing your own assay
 
-`analyze()` runs the run-level non-inferiority test on real plate counts (one product at a time):
+`analyze()` runs the run-level analysis on real plate counts, **one product at a time** (it refuses a table with several products). It returns the ratio, a two-sided 90% confidence interval [L, U] and one of three decisions against the margin (default 0.70):
+
+- **compatible**: L > margin;
+- **harmful**: U < margin;
+- **inconclusive**: otherwise, so more runs are needed.
+
+A run whose mean count is zero is set to 0.5 before taking logs, and the result lists it.
 
 ```python
 import pandas as pd
 from compatpower import analyze
 analyze(pd.read_csv("examples/example_counts.csv"), margin=0.70)
-# {'runs': 4, 'ratio': 0.72, 'lower_limit': 0.55, 'p_difference': 0.06, 'decision': 'not shown compatible', ...}
+# {'runs': 4, 'ratio': 0.72, 'lower_limit': 0.55, 'upper_limit': 0.94, 'p_difference': 0.06, 'decision': 'inconclusive', ...}
 ```
 
-The example shows the central point. The difference is **not significant** (p = 0.06), so the usual practice would call the product "compatible". But the lower 95% limit of the ratio (0.55) is below the margin (0.70), so compatibility is **not shown**.
+The example shows the central point. The difference is **not significant** (p = 0.06), so the usual practice would call the product "compatible". But the lower limit of the ratio (0.55) is below the margin (0.70), so compatibility is **not shown**. The upper limit (0.94) is above the margin, so the product is not shown harmful either: the assay is **inconclusive**.
+
+To plan how many runs a compatibility claim needs:
+
+```python
+from compatpower import required_runs_ni
+required_runs_ni(plates=10, margin=0.70)                       # no-effect product: 6 runs for 80%
+required_runs_ni(plates=10, margin=0.70, true_reduction=0.10)  # true 10% reduction: 10 runs
+```
 
 ## Runs buy more than plates
 
@@ -135,7 +149,7 @@ Rules of thumb with the default parameters (CFU of a *B. bassiana* isolate):
 - plan **about 8 runs of 10 plates** (6–9 across plausible *k* and means, at τ = 0.15; more if τ is larger) to detect a 30% CFU reduction with ~80% power;
 - to show compatibility, prefer the one-sided non-inferiority test (margin 0.70): about 6 runs × 10 plates give ~84% (τ = 0.15); two-sided equivalence needs more;
 - for a fixed number of plates, **more runs with fewer plates** is almost always better;
-- low-variance endpoints (e.g. germination, which is close to binomial) need fewer plates per run, but the same number of runs.
+- low-variance endpoints (e.g. radial growth, plate CV ≈ 10%) need only 3–5 plates per run, and about 4 runs at τ = 0.15: runs, not plates, are then the only lever.
 
 Run `design_table()` with **your** parameters before relying on these numbers.
 
@@ -187,7 +201,8 @@ An example file with simulated data is in [`examples/example_counts.csv`](exampl
 compatpower power --runs 6 --plates 10 --reduction 0.3 [--analysis run|pooled|blocked]
 compatpower equivalence --runs 8 --plates 20 --margin 0.75,1.333
 compatpower noninferiority --runs 6 --plates 10 --margin 0.70
-compatpower analyze examples/example_counts.csv --margin 0.70
+compatpower analyze examples/example_counts.csv --margin 0.70 [--product A]
+compatpower runs --plates 10 --margin 0.70 [--reduction 0.1]
 compatpower allocate --total 60
 compatpower table --out design.csv
 compatpower estimate examples/example_counts.csv

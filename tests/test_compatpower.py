@@ -66,4 +66,48 @@ def test_analyze_example():
     df = pd.read_csv("examples/example_counts.csv")
     res = analyze(df, margin=0.70)
     assert res["runs"] == 4 and 0 < res["lower_limit"] < res["ratio"] < res["upper_limit"]
-    assert res["decision"] in ("compatible", "not shown compatible")
+    assert res["decision"] in ("compatible", "harmful", "inconclusive")
+
+
+def _toy(ratio, runs=6, plates=10, seed=0, product=None):
+    rng = np.random.default_rng(seed)
+    rows = []
+    for r in range(runs):
+        day = np.exp(rng.normal(0, 0.4))
+        for g, f in (("control", 1.0), ("treatment", ratio)):
+            for v in rng.poisson(40 * day * f, plates):
+                rows.append((r, g, int(v)))
+    df = pd.DataFrame(rows, columns=["run", "group", "count"])
+    if product is not None:
+        df["product"] = product
+    return df
+
+
+def test_analyze_three_outcomes():
+    from compatpower import analyze
+    assert analyze(_toy(1.0))["decision"] == "compatible"
+    assert analyze(_toy(0.3))["decision"] == "harmful"
+    assert analyze(_toy(0.7, runs=2, seed=1))["decision"] == "inconclusive"
+
+
+def test_analyze_rejects_several_products_and_handles_zero_runs():
+    from compatpower import analyze
+    df = pd.concat([_toy(1.0, product="A"), _toy(0.5, product="B")])
+    with pytest.raises(ValueError):
+        analyze(df)
+    z = _toy(1.0)
+    z.loc[(z.run == 0) & (z.group == "treatment"), "count"] = 0
+    res = analyze(z)
+    assert res["zero_mean_runs"] == ["0"] and np.isfinite(res["lower_limit"])
+
+
+def test_required_runs_ni_monotone():
+    from compatpower import required_runs_ni
+    r0 = required_runs_ni(10, 0.70, 0.0, model=M, n_sim=800)
+    r1 = required_runs_ni(10, 0.70, 0.10, model=M, n_sim=800)
+    assert r0 is not None and 4 <= r0 <= 8 and (r1 is None or r1 > r0)
+
+
+def test_cli_runs(capsys):
+    assert main(["runs", "--plates", "10", "--n-sim", "300"]) == 0
+    assert int(capsys.readouterr().out) >= 2

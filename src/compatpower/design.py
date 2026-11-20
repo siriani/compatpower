@@ -89,3 +89,18 @@ def required_runs(plates: int, reduction: float = 0.3, target: float = 0.8, mode
         if power(r, plates, reduction, model, "run", alpha, n_sim, seed) >= target:
             return r
     return None
+
+
+def required_runs_ni(plates: int, margin: float = 0.70, true_reduction: float = 0.0, target: float = 0.8,
+                     model: AssayModel = AssayModel(), max_runs: int = 30, alpha: float = 0.05,
+                     n_sim: int = 2000, seed: int | None = 1) -> int | None:
+    """Smallest number of runs giving probability >= `target` of declaring compatibility (lower limit > margin)
+    for a product whose true reduction is `true_reduction`, with `plates` per group per run (None if > max_runs).
+
+    Example: with the article's model (tau = 0.15), a no-effect product needs about 6 runs of 10 plates
+    for 80% at margin 0.70; a product with a true 10% reduction needs about 10.
+    """
+    for r in range(2, max_runs + 1):
+        if noninferiority(r, plates, margin, model, true_reduction, alpha, n_sim, seed) >= target:
+            return r
+    return None
