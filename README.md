@@ -90,7 +90,7 @@ The reason is that more plates shrink the plate-level standard error towards zer
 
 ## Compatibility is a non-inferiority claim
 
-"The product is compatible" means "the effect is too small to matter". That is not the same as "the effect was not significant". The right tool tests the effect against a margin fixed in advance. The primary choice is a one-sided **non-inferiority** test (below); two one-sided tests (TOST) give the two-sided version, shown here for illustration with margins 0.75–1.33.
+"The product is compatible" means "the effect is too small to matter". That is not the same as "the effect was not significant". The right tool tests the effect against a margin fixed in advance. The primary choice is a one-sided **non-inferiority** test (below); two one-sided tests (TOST) give the two-sided version. The accompanying article uses TOST margins 0.80–1.25; the figure below illustrates wider margins (0.75–1.33).
 
 ![TOST](docs/img/tost.png)
 
@@ -113,8 +113,8 @@ noninferiority(runs=6, plates=10, margin=0.70, true_reduction=0.30)  # type I er
 `analyze()` runs the run-level analysis on real plate counts, **one product at a time** (it refuses a table with several products). It returns the ratio, a two-sided 90% confidence interval [L, U] and one of three decisions against the margin (default 0.70):
 
 - **compatible**: L > margin;
-- **harmful**: U < margin;
-- **inconclusive**: otherwise, so more runs are needed.
+- **harmful** (a reduction larger than 1 − margin is shown): U < margin;
+- **inconclusive**: otherwise. Do **not** simply add runs to the same assay and test again: that is optional stopping and inflates the risk of declaring a harmful product compatible (about 9% instead of 5% in the article's simulations). Run a new, independent assay, or pre-specify the total number of runs (an interim look may stop only for harm).
 
 A run whose mean count is zero is set to 0.5 before taking logs, and the result lists it.
 
@@ -191,7 +191,7 @@ design_table(model=model)
 
 - `k` is fitted by maximum likelihood (negative binomial, one mean per run × group).
 - `sd_run` is estimated by the method of moments from the control means of different runs (needs ≥ 2 runs, and is imprecise with fewer than ~5).
-- `tau` can be estimated **only if the same product was tested in two or more runs**. Otherwise an assumed value is used and the report says so. Repeating at least one product on different days is the single most informative thing a lab can do to plan its assays.
+- `tau` can be estimated **only if the same product was tested in two or more runs**. Otherwise an assumed value is used and the report says so. Repeating a product in independent runs is the only way to learn about `tau`, but one assay estimates it poorly (with 10 runs and a true `tau` of 0.15, estimates range from 0 to about 0.34); pool such information across assays.
 
 An example file with simulated data is in [`examples/example_counts.csv`](examples/example_counts.csv).
 
@@ -212,6 +212,7 @@ compatpower estimate examples/example_counts.csv
 ## Assumptions and limitations
 
 - Counts are negative binomial within a run; run and run × treatment effects are normal on the log scale.
+- A "run" is an independently prepared exposure. `tau` may arise from preparation errors (dilutions, mixing) or from day-specific variation; independent preparations on the same day can replace separate days only if no part of `tau` is day-specific, so by default plan separate days.
 - Plate-level tests use $\log(y+0.5)$; run-level tests use the log of each run mean without offset (the offset biased the ratio and inflated the non-inferiority error). For the final analysis of real data, a negative binomial mixed model (run as random effect, with a run × treatment term) is the natural choice.
 - The default parameters come from one isolate, one endpoint (CFU) and three runs; `tau` is assumed. They are a starting point, not a universal answer.
 - Equivalence margins are a scientific decision. Link them to what matters agronomically (for example the class limits of a compatibility index), and fix them before the assay.
